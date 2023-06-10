@@ -36,7 +36,7 @@ public struct PublicKey {
 	struct InvalidByteCount: Swift.Error, CustomStringConvertible {
 		let actual: Int
 		var description: String {
-			" Invalid byteCount, expected: \(PublicKey.byteCount) , but got: 	\(actual) "
+			"Invalid byteCount, expected: \(PublicKey.byteCount), but got: \(actual)"
 		}
 	}
 	
