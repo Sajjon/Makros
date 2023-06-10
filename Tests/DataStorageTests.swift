@@ -36,6 +36,31 @@ final class DataStoragePluginTests: XCTestCase {
 		)
 	}
 	
+	func testDataStoragePublicExplicitNamedData() {
+		
+		assertMacroExpansion(
+			"""
+			@DataStorage(named: data)
+			public struct DataHolder {
+			}
+			""",
+			
+			expandedSource:
+			"""
+			
+			public struct DataHolder {
+				public let data: Data
+				public init(data: Data) {
+					self.data = data
+				}
+			}
+			""",
+			
+			macros: testMacros,
+			indentationWidth: .tab
+		)
+	}
+	
 	func testDataStorageImplicitInternal() {
 		
 		assertMacroExpansion(
