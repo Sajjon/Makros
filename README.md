@@ -9,7 +9,7 @@ public struct PublicKey {}
 
 Expands to:
 
-```
+```swift
 public struct PublicKey {
 	public let key: Data
 	
