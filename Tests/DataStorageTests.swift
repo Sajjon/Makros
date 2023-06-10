@@ -30,4 +30,23 @@ final class DataStoragePluginTests: XCTestCase {
 			macros: testMacros
 		)
 	}
+	
+	func testDiagnosticOnlyApplicableToStruct() {
+		assertMacroExpansion(
+			   """
+			   @DataStorage
+			   enum MyEnum {
+			   }
+			   """,
+			   expandedSource: """
+
+			   enum MyEnum {
+			   }
+			   """,
+			   diagnostics: [
+				   DiagnosticSpec(message: "@DataStorage can only be applied to a struct", line: 1, column: 1)
+			   ],
+			   macros: testMacros
+		   )
+	}
 }
