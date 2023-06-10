@@ -11,8 +11,10 @@ public struct DataStorageMacro: MemberMacro {
 		guard let declaration = declaration.as(StructDeclSyntax.self) else {
 			throw Error.onlyApplicableToStruct
 		}
+		let access = declaration.modifiers?.first(where: \.isNeededAccessLevelModifier)
+
 		return [
-			"let data: Data"
+			"\(access)let data: Data"
 		]
 	}
 	
@@ -28,4 +30,22 @@ public struct DataStorageMacro: MemberMacro {
 		}
 	}
 
+}
+
+extension DeclModifierSyntax {
+	var isNeededAccessLevelModifier: Bool {
+		switch self.name.tokenKind {
+		case .keyword(.public): return true
+		default: return false
+		}
+	}
+}
+
+extension SyntaxStringInterpolation {
+	// It would be nice for SwiftSyntaxBuilder to provide this out-of-the-box.
+	mutating func appendInterpolation<Node: SyntaxProtocol>(_ node: Node?) {
+		if let node {
+			appendInterpolation(node)
+		}
+	}
 }

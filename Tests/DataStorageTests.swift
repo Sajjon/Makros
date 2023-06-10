@@ -11,7 +11,7 @@ private let testMacros: [String: Macro.Type] = [
 
 final class DataStoragePluginTests: XCTestCase {
 	
-	func testDataStorage() {
+	func testDataStoragePublic() {
 		
 		assertMacroExpansion(
 			"""
@@ -24,11 +24,56 @@ final class DataStoragePluginTests: XCTestCase {
 			"""
 			
 			public struct DataHolder {
-			    let data: Data
+				public let data: Data
 			}
 			""",
 			
-			macros: testMacros
+			macros: testMacros,
+			indentationWidth: .tab
+		)
+	}
+	
+	func testDataStorageImplicitInternal() {
+		
+		assertMacroExpansion(
+			"""
+			@DataStorage
+			struct DataHolder {
+			}
+			""",
+			
+			expandedSource:
+			"""
+			
+			struct DataHolder {
+				let data: Data
+			}
+			""",
+			
+			macros: testMacros,
+			indentationWidth: .tab
+		)
+	}
+	
+	func testDataStorageExplicitInternal() {
+		
+		assertMacroExpansion(
+			"""
+			@DataStorage
+			internal struct DataHolder {
+			}
+			""",
+			
+			expandedSource:
+			"""
+			
+			internal struct DataHolder {
+				let data: Data
+			}
+			""",
+			
+			macros: testMacros,
+			indentationWidth: .tab
 		)
 	}
 	
@@ -47,7 +92,8 @@ final class DataStoragePluginTests: XCTestCase {
 			   diagnostics: [
 				   DiagnosticSpec(message: "@DataStorage can only be applied to a struct", line: 1, column: 1)
 			   ],
-			   macros: testMacros
+			   macros: testMacros,
+			   indentationWidth: .tab
 		   )
 	}
 }
