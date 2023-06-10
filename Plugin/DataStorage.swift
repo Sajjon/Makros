@@ -47,9 +47,11 @@ extension DataStorageMacro {
 		}()
 		
 		let initializer: DeclSyntax = {
+			
 			guard let byteCount else {
 				return "\(access)init(\(raw: storageName): Data) { self.\(raw: storageName) = \(raw: storageName) }"
 			}
+			
 			let errorDescription = "Invalid byteCount, expected: \\(\(declaration.identifier.text).\(Self.macroArgumentByteCount)), but got: \\(actual)"
 			return """
 			public static let \(raw: Self.macroArgumentByteCount) = \(byteCount)

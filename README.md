@@ -1,8 +1,31 @@
 # `@DataStorage`
 
-```swift
-@DataStorage
-struct DataHolder {}
+Makes it easy to work with `Data`.
 
-assert(DataHolder(data: Data([0xde, 0xad, 0xbe, 0xef])).data.count == 4)
+```swift
+@DataStorage(named: "key", byteCount: 32)
+public struct PublicKey {}
+```
+
+Expands to:
+
+```
+public struct PublicKey {
+	public let key: Data
+	
+	public static let byteCount = 32
+	struct InvalidByteCount: Swift.Error, CustomStringConvertible {
+		let actual: Int
+		var description: String {
+			" Invalid byteCount, expected: \(PublicKey.byteCount) , but got: 	\(actual) "
+		}
+	}
+	
+	public init(key: Data) throws {
+		guard key.count == Self.byteCount else {
+			throw InvalidByteCount(actual: key.count)
+		}
+		self.key = key
+	}
+}
 ```

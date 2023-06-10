@@ -18,3 +18,6 @@ do {
 } catch {
 	print("Got expected error: \(String(describing: error))")
 }
+
+@DataStorage(named: "key", byteCount: 32)
+public struct PublicKey {}
