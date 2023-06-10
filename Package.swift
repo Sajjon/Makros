@@ -1,23 +1,65 @@
-// swift-tools-version: 5.8
+// swift-tools-version: 5.9
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
+import CompilerPluginSupport
 import PackageDescription
 
 let package = Package(
-    name: "Makros",
-    products: [
-        // Products define the executables and libraries a package produces, making them visible to other packages.
-        .library(
-            name: "Makros",
-            targets: ["Makros"]),
-    ],
-    targets: [
-        // Targets are the basic building blocks of a package, defining a module or a test suite.
-        // Targets can depend on other targets in this package and products from dependencies.
-        .target(
-            name: "Makros"),
-        .testTarget(
-            name: "MakrosTests",
-            dependencies: ["Makros"]),
-    ]
+	name: "Makros",
+	platforms: [
+	  .iOS("13.0"),
+	  .macOS("10.15")
+	],
+	products: [
+	  .executable(
+		name: "Makros",
+		targets: ["Makros"]
+	  ),
+	  .library(
+		name: "MakrosLib",
+		targets: ["MakrosLib"]
+	  ),
+	],
+	dependencies: [
+	  .package(
+		url: "https://github.com/apple/swift-syntax.git",
+		branch: "main"
+	  ),
+	],
+	targets: [
+	  .macro(
+		name: "MakrosPlugin",
+		dependencies: [
+		  .product(name: "SwiftSyntax", package: "swift-syntax"),
+		  .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
+		  .product(name: "SwiftOperators", package: "swift-syntax"),
+		  .product(name: "SwiftParser", package: "swift-syntax"),
+		  .product(name: "SwiftParserDiagnostics", package: "swift-syntax"),
+		  .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
+		],
+		path: "Plugin"
+	  ),
+	  .testTarget(
+		name: "MakrosPluginTests",
+		dependencies: [
+			"MakrosPlugin"
+		],
+		path: "Tests"
+	  ),
+	  .target(
+		name: "MakrosLib",
+		dependencies: [
+			"MakrosPlugin"
+		],
+		path: "Lib"
+	  ),
+	  .executableTarget(
+		name: "Makros",
+		dependencies: [
+		  "MakrosLib"
+		],
+		path: "Makros"
+	  )
+	]
 )
+
