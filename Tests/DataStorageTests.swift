@@ -130,4 +130,40 @@ final class DataStoragePluginTests: XCTestCase {
 			   indentationWidth: .tab
 		   )
 	}
+	
+	func testDataStoragePublicExplicitNamedDataByteCount32() {
+		
+		assertMacroExpansion(
+			"""
+			@DataStorage(named: data, byteCount: 32)
+			public struct DataHolder {
+			}
+			""",
+			
+			expandedSource:
+			"""
+			
+			public struct DataHolder {
+				public let data: Data
+				public static let byteCount = 32
+				struct InvalidByteCount: Swift.Error, CustomStringConvertible {
+					let actual: Int
+					var description: String {
+						" Invalid byteCount, expected: \\(DataHolder.byteCount) , but got: \\(actual) "
+					}
+				}
+
+				public init(data: Data) throws {
+					guard data.count == Self.byteCount else {
+						throw InvalidByteCount(actual: data.count)
+					}
+					self.data = data
+				}
+			}
+			""",
+			
+			macros: testMacros,
+			indentationWidth: .tab
+		)
+	}
 }
