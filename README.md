@@ -30,21 +30,23 @@ Expands to:
 
 ```swift
 public struct PublicKey {
-	public let key: Data
-	
 	public static let byteCount = 32
-	struct InvalidByteCount: Swift.Error, CustomStringConvertible {
-		let actual: Int
-		var description: String {
-			"Invalid byteCount, expected: \(PublicKey.byteCount), but got: \(actual)"
-		}
-	}
+	public let key: Data
 	
 	public init(key: Data) throws {
 		guard key.count == Self.byteCount else {
 			throw InvalidByteCount(actual: key.count)
 		}
 		self.key = key
+	}
+}
+
+extension PubliKey {
+	struct InvalidByteCount: Swift.Error, CustomStringConvertible {
+		let actual: Int
+		var description: String {
+			"Invalid byteCount, expected: \(PublicKey.byteCount), but got: \(actual)"
+		}
 	}
 }
 ```
