@@ -14,7 +14,8 @@ public struct DataStorageMacro: MemberMacro {
 		let access = declaration.modifiers?.first(where: \.isNeededAccessLevelModifier)
 
 		return [
-			"\(access)let data: Data"
+			"\(access)let data: Data",
+			"\(access)init(data: Data) { self.data = data }"
 		]
 	}
 	
