@@ -3,19 +3,38 @@ import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
 public struct DataStorageMacro: MemberMacro {
+	public static let defaultStorageName = "data"
+}
+
+extension DataStorageMacro {
 	public static func expansion<Declaration, Context>(
 		of node: AttributeSyntax,
 		providingMembersOf declaration: Declaration,
 		in context: Context
 	) throws -> [DeclSyntax] where Declaration : DeclGroupSyntax, Context : MacroExpansionContext {
+		
 		guard let declaration = declaration.as(StructDeclSyntax.self) else {
 			throw Error.onlyApplicableToStruct
 		}
 		let access = declaration.modifiers?.first(where: \.isNeededAccessLevelModifier)
-
+		
+		let storageName = {
+			guard
+				case let .argumentList(arguments) = node.argument,
+				let firstElement = arguments.first,
+				let stringLiteral = firstElement.expression
+					.as(StringLiteralExprSyntax.self),
+				stringLiteral.segments.count == 1,
+				case let .stringSegment(stringSegment)? = stringLiteral.segments.first
+			else {
+				return DataStorageMacro.defaultStorageName
+			}
+			return stringSegment.content.text
+		}()
+		
 		return [
-			"\(access)let data: Data",
-			"\(access)init(data: Data) { self.data = data }"
+			"\(access)let \(raw: storageName): Data",
+			"\(access)init(\(raw: storageName): Data) { self.\(raw: storageName) = \(raw: storageName) }"
 		]
 	}
 	
@@ -30,8 +49,11 @@ public struct DataStorageMacro: MemberMacro {
 			}
 		}
 	}
-
+	
 }
+
+
+
 
 extension DeclModifierSyntax {
 	var isNeededAccessLevelModifier: Bool {
@@ -50,3 +72,4 @@ extension SyntaxStringInterpolation {
 		}
 	}
 }
+

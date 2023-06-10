@@ -61,11 +61,11 @@ final class DataStoragePluginTests: XCTestCase {
 		)
 	}
 	
-	func testDataStorageExplicitInternal() {
+	func testDataStorageNamedExplicitInternal() {
 		
 		assertMacroExpansion(
 			"""
-			@DataStorage
+			@DataStorage(named: "foo")
 			internal struct DataHolder {
 			}
 			""",
@@ -74,9 +74,9 @@ final class DataStoragePluginTests: XCTestCase {
 			"""
 			
 			internal struct DataHolder {
-				let data: Data
-				init(data: Data) {
-					self.data = data
+				let foo: Data
+				init(foo: Data) {
+					self.foo = foo
 				}
 			}
 			""",

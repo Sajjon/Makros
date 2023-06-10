@@ -1,7 +1,8 @@
 import Foundation
+import MakrosPlugin
 
-@attached(member, names: named(data), named(init(data:)))
-public macro DataStorage() = #externalMacro(
+@attached(member, names: named(init(data:)), arbitrary)
+public macro DataStorage(named: String = DataStorageMacro.defaultStorageName) = #externalMacro(
 	module: "MakrosPlugin",
 	type: "DataStorageMacro"
 )
