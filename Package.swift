@@ -42,7 +42,8 @@ let package = Package(
 	  .testTarget(
 		name: "MakrosPluginTests",
 		dependencies: [
-			"MakrosPlugin"
+			.product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
+			"MakrosPlugin",
 		],
 		path: "Tests"
 	  ),

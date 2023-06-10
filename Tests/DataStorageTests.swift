@@ -6,21 +6,25 @@ import MakrosPlugin
 import XCTest
 
 private let testMacros: [String: Macro.Type] = [
-	"stringify" : StringifyMacro.self,
+	"DataStorage" : DataStorageMacro.self,
 ]
 
-final class StringifyPluginTests: XCTestCase {
+final class DataStoragePluginTests: XCTestCase {
 	
-	func testStringify() {
+	func testDataStorage() {
 		
 		assertMacroExpansion(
 			"""
-			#stringify(x + y)
+			@DataStorage
+			struct DataHolder {
+			}
 			""",
 			
 			expandedSource:
 			"""
-			(x + y, "x + y")
+			
+			struct DataHolder {
+			}
 			""",
 			
 			macros: testMacros

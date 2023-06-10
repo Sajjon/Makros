@@ -7,3 +7,9 @@ public macro stringify<T>(_ value: T) -> (T, String) = #externalMacro(
 	module: "MakrosPlugin",
 	type: "StringifyMacro"
 )
+
+@attached(member)
+public macro DataStorage() = #externalMacro(
+	module: "MakrosPlugin",
+	type: "DataStorageMacro"
+)
