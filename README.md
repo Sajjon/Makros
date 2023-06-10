@@ -2,6 +2,25 @@
 
 Makes it easy to work with `Data`.
 
+## No args
+```swift
+@DataStorage
+struct DataHolder {}
+```
+
+Expands to:
+```swift
+struct DataHolder {
+	let data: Data
+	
+	init(data: Data) {
+		self.data = data
+	}
+}
+```
+
+## `byteCount`
+
 ```swift
 @DataStorage(named: "key", byteCount: 32)
 public struct PublicKey {}
