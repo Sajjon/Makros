@@ -16,14 +16,15 @@ final class DataStoragePluginTests: XCTestCase {
 		assertMacroExpansion(
 			"""
 			@DataStorage
-			struct DataHolder {
+			public struct DataHolder {
 			}
 			""",
 			
 			expandedSource:
 			"""
 			
-			struct DataHolder {
+			public struct DataHolder {
+			    let data: Data
 			}
 			""",
 			

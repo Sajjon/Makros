@@ -1,11 +1,8 @@
 import MakrosLib
 import Foundation
 
-let x = 1
-let y = 2
-
-// "Stringify" macro turns the expression into a string.
-print(#stringify(x + y))
-
 @DataStorage
 struct DataHolder {}
+
+assert(DataHolder(data: Data([0xde, 0xad, 0xbe, 0xef])).data.count == 4)
+print("OK!")
