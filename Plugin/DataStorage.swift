@@ -53,8 +53,6 @@ extension DataStorageMacro {
 			type: "\(raw: Data.self)" as TypeSyntax
 		)
 		
-
-		
 		let actualProp = "actual"
 		let errorDescription = "Invalid byteCount, expected: \\(\(declaration.identifier.text).\(Self.macroArgumentByteCount)), but got: \\(\(actualProp))"
 		
@@ -71,16 +69,15 @@ extension DataStorageMacro {
 				.init(decl: "var description: \(String.self) { \"\(raw: errorDescription)\" }" as DeclSyntax),
 			])
 		}
-		
-		
 
 		let isInitThrowing = byteCount != nil
-		let initializerDecl = InitializerDeclSyntax.init(
+		let initializerDecl = InitializerDeclSyntax(
 			leadingTrivia: access == nil ? .newline : .tab,
 			modifiers: access.map { [$0] },
-			signature: .init(input: .init(parameterListBuilder: {[
-				dataStorageParam
-			]}), effectSpecifiers: .init(throwsSpecifier: isInitThrowing ? "throws" : nil)),
+			signature: .init(
+				input: [dataStorageParam],
+				effectSpecifiers: isInitThrowing ?> .throws
+			),
 			bodyBuilder: {
 				if isInitThrowing {
 					"""
@@ -141,3 +138,21 @@ extension SyntaxStringInterpolation {
 	}
 }
 
+
+extension FunctionEffectSpecifiersSyntax {
+	static let `throws` = Self(throwsSpecifier: "throws")
+}
+
+infix operator ?>
+func ?><Value>(condition: Bool, value: Value) -> Value? {
+	guard condition else {
+		return nil
+	}
+	return value
+}
+
+extension ParameterClauseSyntax: ExpressibleByArrayLiteral {
+	public init(arrayLiteral elements: FunctionParameterSyntax...) {
+		self.init(parameterList: .init(elements))
+	}
+}
