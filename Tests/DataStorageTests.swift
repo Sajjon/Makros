@@ -25,6 +25,7 @@ final class DataStoragePluginTests: XCTestCase {
 			
 			public struct DataHolder {
 				public let data: Data
+
 				public init(data: Data) {
 					self.data = data
 				}
@@ -50,6 +51,7 @@ final class DataStoragePluginTests: XCTestCase {
 			
 			public struct DataHolder {
 				public let data: Data
+
 				public init(data: Data) {
 					self.data = data
 				}

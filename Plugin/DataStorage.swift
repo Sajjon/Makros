@@ -1,6 +1,7 @@
 import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
+import Foundation
 
 public struct DataStorageMacro: MemberMacro {
 	public static let defaultStorageName = "data"
@@ -46,10 +47,37 @@ extension DataStorageMacro {
 			return integerLiteral.digits
 		}()
 		
+		let dataStorageParam = FunctionParameterSyntax(
+			firstName: .identifier(storageName),
+			colon: .colonToken(trailingTrivia: .space),
+			type: "\(raw: Data.self)" as TypeSyntax
+		)
+		
+		let initializerDecl = InitializerDeclSyntax.init(
+			leadingTrivia: access == nil ? .newline : .tab,
+			modifiers: access.map { [$0] },
+			signature: .init(
+				input: .init(
+					parameterListBuilder: {
+						[
+							dataStorageParam
+						]
+					}
+				)
+			),
+			bodyBuilder: {
+				[
+					"self.\(raw: storageName) = \(raw: storageName)"
+				]
+			}
+		)
+		
+		
+		
 		let initializer: DeclSyntax = {
 			
 			guard let byteCount else {
-				return "\(access)init(\(raw: storageName): Data) { self.\(raw: storageName) = \(raw: storageName) }"
+				return DeclSyntax(initializerDecl)
 			}
 			
 			let errorDescription = "Invalid byteCount, expected: \\(\(declaration.identifier.text).\(Self.macroArgumentByteCount)), but got: \\(actual)"
