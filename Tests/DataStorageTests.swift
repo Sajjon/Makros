@@ -146,18 +146,18 @@ final class DataStoragePluginTests: XCTestCase {
 			"""
 			
 			public struct DataHolder {
-				public let data: Data
-				public static let byteCount = 32
-				struct InvalidByteCount: Swift.Error, CustomStringConvertible {
+				struct InvalidByteCountError: Error, CustomStringConvertible {
 					let actual: Int
 					var description: String {
-						" Invalid byteCount, expected: \\(DataHolder.byteCount) , but got: \\(actual) "
+						"Invalid byteCount, expected: \\(DataHolder.byteCount), but got: \\(actual)"
 					}
 				}
+				public static let byteCount = 32
+				public let data: Data
 
 				public init(data: Data) throws {
 					guard data.count == Self.byteCount else {
-						throw InvalidByteCount(actual: data.count)
+						throw InvalidByteCountError(actual: data.count)
 					}
 					self.data = data
 				}

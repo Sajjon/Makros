@@ -53,55 +53,57 @@ extension DataStorageMacro {
 			type: "\(raw: Data.self)" as TypeSyntax
 		)
 		
+
+		
+		let actualProp = "actual"
+		let errorDescription = "Invalid byteCount, expected: \\(\(declaration.identifier.text).\(Self.macroArgumentByteCount)), but got: \\(\(actualProp))"
+		
+		let errorTypeName = "InvalidByteCountError"
+		let invalidByteCountError = StructDeclSyntax(
+			identifier: .identifier(errorTypeName),
+			inheritanceClause: .init(inheritedTypeCollection: [
+				.init(typeName: "Error" as TypeSyntax, trailingComma: .commaToken()),
+				.init(typeName: "CustomStringConvertible" as TypeSyntax),
+			])
+		) {
+			.init([
+				.init(decl: "let \(raw: actualProp): \(Int.self)" as DeclSyntax),
+				.init(decl: "var description: \(String.self) { \"\(raw: errorDescription)\" }" as DeclSyntax),
+			])
+		}
+		
+		
+
+		let isInitThrowing = byteCount != nil
 		let initializerDecl = InitializerDeclSyntax.init(
 			leadingTrivia: access == nil ? .newline : .tab,
 			modifiers: access.map { [$0] },
-			signature: .init(
-				input: .init(
-					parameterListBuilder: {
-						[
-							dataStorageParam
-						]
-					}
-				)
-			),
+			signature: .init(input: .init(parameterListBuilder: {[
+				dataStorageParam
+			]}), effectSpecifiers: .init(throwsSpecifier: isInitThrowing ? "throws" : nil)),
 			bodyBuilder: {
-				[
-					"self.\(raw: storageName) = \(raw: storageName)"
-				]
+				if isInitThrowing {
+					"""
+					guard \(raw: storageName).count == Self.\(raw: Self.macroArgumentByteCount) else {
+						throw \(raw: errorTypeName)(\(raw: actualProp): \(raw: storageName).count)
+					}
+					"""
+				}
+				"self.\(raw: storageName) = \(raw: storageName)"
 			}
 		)
-		
-		
-		
-		let initializer: DeclSyntax = {
-			
-			guard let byteCount else {
-				return DeclSyntax(initializerDecl)
-			}
-			
-			let errorDescription = "Invalid byteCount, expected: \\(\(declaration.identifier.text).\(Self.macroArgumentByteCount)), but got: \\(actual)"
-			return """
-			public static let \(raw: Self.macroArgumentByteCount) = \(byteCount)
-			struct InvalidByteCount: Swift.Error, CustomStringConvertible {
-				let actual: Int
-				var description: String {
-					"\(raw: errorDescription)"
-				}
-			}
-			\(access)init(\(raw: storageName): Data) throws {
-				guard \(raw: storageName).count == Self.\(raw: Self.macroArgumentByteCount) else {
-					throw InvalidByteCount(actual: \(raw: storageName).count)
-				}
-				self.\(raw: storageName) = \(raw: storageName)
-			}
-			"""
-		}()
-		
-		return [
-			"\(access)let \(raw: storageName): Data",
-			initializer
+
+		var declarations: [DeclSyntax] = [
+			"\(access)let \(raw: storageName): \(Data.self)" as DeclSyntax,
+			DeclSyntax(initializerDecl)
 		]
+		
+		if isInitThrowing {
+			declarations.insert("\(access)static let \(raw: Self.macroArgumentByteCount) = \(byteCount)", at: 0)
+			declarations.insert(DeclSyntax(invalidByteCountError), at: 0)
+		}
+		
+		return declarations
 	}
 	
 	enum Error: Swift.Error, CustomStringConvertible {
