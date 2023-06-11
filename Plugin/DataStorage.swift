@@ -46,12 +46,8 @@ extension DataStorageMacro {
 			}
 			return integerLiteral.digits
 		}()
+
 		
-		let dataStorageParam = FunctionParameterSyntax(
-			firstName: .identifier(storageName),
-			colon: .colonToken(trailingTrivia: .space),
-			type: "\(raw: Data.self)" as TypeSyntax
-		)
 		
 		let actualProp = "actual"
 		let errorDescription = "Invalid byteCount, expected: \\(\(declaration.identifier.text).\(Self.macroArgumentByteCount)), but got: \\(\(actualProp))"
@@ -59,10 +55,7 @@ extension DataStorageMacro {
 		let errorTypeName = "InvalidByteCountError"
 		let invalidByteCountError = StructDeclSyntax(
 			identifier: .identifier(errorTypeName),
-			inheritanceClause: .init(inheritedTypeCollection: [
-				.init(typeName: "Error" as TypeSyntax, trailingComma: .commaToken()),
-				.init(typeName: "CustomStringConvertible" as TypeSyntax),
-			])
+			inheritanceClause: ["Error", "CustomStringConvertible"]
 		) {
 			.init([
 				.init(decl: "let \(raw: actualProp): \(Int.self)" as DeclSyntax),
@@ -75,8 +68,8 @@ extension DataStorageMacro {
 			leadingTrivia: access == nil ? .newline : .tab,
 			modifiers: access.map { [$0] },
 			signature: .init(
-				input: [dataStorageParam],
-				effectSpecifiers: isInitThrowing ?> .throws
+				input: [FunctionParameterSyntax(storageName, Data.self)],
+				effectSpecifiers: isInitThrowing ? .throws : nil
 			),
 			bodyBuilder: {
 				if isInitThrowing {
@@ -143,16 +136,26 @@ extension FunctionEffectSpecifiersSyntax {
 	static let `throws` = Self(throwsSpecifier: "throws")
 }
 
-infix operator ?>
-func ?><Value>(condition: Bool, value: Value) -> Value? {
-	guard condition else {
-		return nil
-	}
-	return value
-}
-
 extension ParameterClauseSyntax: ExpressibleByArrayLiteral {
 	public init(arrayLiteral elements: FunctionParameterSyntax...) {
 		self.init(parameterList: .init(elements))
+	}
+}
+
+extension TypeInheritanceClauseSyntax: ExpressibleByArrayLiteral {
+	public init(arrayLiteral elements: String...) {
+		self.init(inheritedTypeCollection: .init(elements.enumerated().map { (offset, element) in
+				.init(typeName: TypeSyntax(stringLiteral: element), trailingComma: (offset == elements.count - 1) ? nil : .commaToken())
+		}))
+	}
+}
+
+extension FunctionParameterSyntax {
+	init<ParameterType>(_ firstName: String, _ type: ParameterType) {
+		self.init(
+			firstName: .identifier(firstName),
+			colon: .colonToken(trailingTrivia: .space),
+			type: "\(raw: type)" as TypeSyntax
+		)
 	}
 }
