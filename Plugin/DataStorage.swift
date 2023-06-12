@@ -1,13 +1,48 @@
 import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
+import SwiftDiagnostics
 import Foundation
 
-public struct DataStorageMacro: MemberMacro {
+public struct DataStorageMacro: MemberMacro, ConformanceMacro {
 	public static let defaultStorageName = "data"
 	private static let macroArgumentStorageName = "named"
 	private static let macroArgumentByteCount = "byteCount"
 }
+
+
+extension DataStorageMacro {
+
+	public static func expansion<Declaration, Context>(
+		of node: AttributeSyntax,
+		providingConformancesOf declaration: Declaration,
+		in context: Context
+	) throws -> [(
+		TypeSyntax,
+		GenericWhereClauseSyntax?
+	)] where Declaration : DeclGroupSyntax, Context : MacroExpansionContext {
+
+		guard let declaration = declaration.as(StructDeclSyntax.self) else {
+			context.diagnose(DataStorageMacroDiagnostic.requiresStruct.diagnose(at: declaration))
+			return []
+		}
+		
+		let inheritedTypes = declaration.inheritanceClause?.inheritedTypeCollection ?? []
+		
+		// If there is an explicit conformance to `DataProtocol` already, don't add conformance
+		guard !inheritedTypes.contains(where: { $0.typeName.trimmedDescription == "DataProtocol" }) else {
+			return []
+		}
+		
+		return [
+			(TypeSyntax(stringLiteral: "DataProtocol"), nil),
+		]
+		
+	}
+	
+}
+
+
 
 extension DataStorageMacro {
 	public static func expansion<Declaration, Context>(
@@ -17,7 +52,8 @@ extension DataStorageMacro {
 	) throws -> [DeclSyntax] where Declaration : DeclGroupSyntax, Context : MacroExpansionContext {
 		
 		guard let declaration = declaration.as(StructDeclSyntax.self) else {
-			throw Error.onlyApplicableToStruct
+			context.diagnose(DataStorageMacroDiagnostic.requiresStruct.diagnose(at: declaration))
+			return []
 		}
 		let access = declaration.modifiers?.first(where: \.isNeededAccessLevelModifier)
 		
@@ -46,7 +82,10 @@ extension DataStorageMacro {
 			}
 			return integerLiteral.digits
 		}()
-
+		
+		let inheritedTypes = declaration.inheritanceClause?.inheritedTypeCollection ?? []
+		
+		let addDataProtocolSyntax = !inheritedTypes.contains(where: { $0.typeName.trimmedDescription == "DataProtocol" })
 		
 		
 		let actualProp = "actual"
@@ -62,7 +101,7 @@ extension DataStorageMacro {
 				.init(decl: "var description: \(String.self) { \"\(raw: errorDescription)\" }" as DeclSyntax),
 			])
 		}
-
+		
 		let isInitThrowing = byteCount != nil
 		let initializerDecl = InitializerDeclSyntax(
 			leadingTrivia: access == nil ? .newline : .tab,
@@ -73,44 +112,86 @@ extension DataStorageMacro {
 			),
 			bodyBuilder: {
 				if isInitThrowing {
-					"""
-					guard \(raw: storageName).count == Self.\(raw: Self.macroArgumentByteCount) else {
-						throw \(raw: errorTypeName)(\(raw: actualProp): \(raw: storageName).count)
-					}
-					"""
+  """
+  guard \(raw: storageName).count == Self.\(raw: Self.macroArgumentByteCount) else {
+   throw \(raw: errorTypeName)(\(raw: actualProp): \(raw: storageName).count)
+  }
+  """
 				}
 				"self.\(raw: storageName) = \(raw: storageName)"
 			}
 		)
+		
+		let dataProtocolConformanceSyntax: DeclSyntax = """
+		\(access)subscript(position: Data.Index) -> Data.Element {
+			\(raw: storageName)[position]
+		}
 
+		\(access)subscript(bounds: Range<Data.Index>) -> Data.SubSequence {
+			\(raw: storageName)[bounds]
+		}
+
+		\(access)var regions: Data.Regions {
+			\(raw: storageName).regions
+		}
+
+		\(access)var startIndex: Data.Index {
+			\(raw: storageName).startIndex
+		}
+
+		\(access)var endIndex: Data.Index {
+			\(raw: storageName).endIndex
+		}
+
+		\(access)typealias Regions = Data.Regions
+		\(access)typealias Element = Data.Element
+		\(access)typealias Index = Data.Index
+		\(access)typealias SubSequence = Data.SubSequence
+		\(access)typealias Indices = Data.Indices
+		"""
+		
 		var declarations: [DeclSyntax] = [
 			"\(access)let \(raw: storageName): \(Data.self)" as DeclSyntax,
 			DeclSyntax(initializerDecl)
 		]
 		
+		if addDataProtocolSyntax {
+			declarations.insert(dataProtocolConformanceSyntax, at: 0)
+		}
+		
 		if isInitThrowing {
 			declarations.insert("\(access)static let \(raw: Self.macroArgumentByteCount) = \(byteCount)", at: 0)
 			declarations.insert(DeclSyntax(invalidByteCountError), at: 0)
 		}
+	
 		
 		return declarations
 	}
 	
-	enum Error: Swift.Error, CustomStringConvertible {
-		static let onlyApplicableToStruct: Self = .message("@DataStorage can only be applied to a struct")
-		case message(String)
-		
-		var description: String {
-			switch self {
-			case .message(let text):
-				return text
-			}
+}
+
+enum DataStorageMacroDiagnostic {
+	case requiresStruct
+}
+
+extension DataStorageMacroDiagnostic: DiagnosticMessage {
+	func diagnose(at node: some SyntaxProtocol) -> Diagnostic {
+		Diagnostic(node: Syntax(node), message: self)
+	}
+	
+	var message: String {
+		switch self {
+		case .requiresStruct:
+			return "'DataStorage' macro can only be applied to a struct"
 		}
 	}
 	
+	var severity: DiagnosticSeverity { .error }
+	
+	var diagnosticID: MessageID {
+		MessageID(domain: "Makros", id: "Data.\(self)")
+	}
 }
-
-
 
 
 extension DeclModifierSyntax {

@@ -50,14 +50,14 @@ let package = Package(
 	  .target(
 		name: "MakrosLib",
 		dependencies: [
-			"MakrosPlugin"
+			"MakrosPlugin",
 		],
 		path: "Lib"
 	  ),
 	  .executableTarget(
 		name: "Makros",
 		dependencies: [
-		  "MakrosLib"
+		  "MakrosLib",
 		],
 		path: "Makros"
 	  )

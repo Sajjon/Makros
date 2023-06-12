@@ -24,6 +24,40 @@ final class DataStoragePluginTests: XCTestCase {
 			"""
 			
 			public struct DataHolder {
+				public subscript(position: Data.Index) -> Data.Element {
+					data[position]
+				}
+			
+			
+				public subscript(bounds: Range < Data.Index>) -> Data.SubSequence {
+					data[bounds]
+				}
+			
+			
+				public var regions: Data.Regions {
+					data.regions
+				}
+			
+			
+				public var startIndex: Data.Index {
+					data.startIndex
+				}
+			
+			
+				public var endIndex: Data.Index {
+					data.endIndex
+				}
+			
+			
+				public typealias Regions = Data.Regions
+			
+				public typealias Element = Data.Element
+			
+				public typealias Index = Data.Index
+			
+				public typealias SubSequence = Data.SubSequence
+			
+				public typealias Indices = Data.Indices
 				public let data: Data
 
 				public init(data: Data) {
@@ -50,6 +84,40 @@ final class DataStoragePluginTests: XCTestCase {
 			"""
 			
 			public struct DataHolder {
+				public subscript(position: Data.Index) -> Data.Element {
+					data[position]
+				}
+			
+			
+				public subscript(bounds: Range < Data.Index>) -> Data.SubSequence {
+					data[bounds]
+				}
+			
+			
+				public var regions: Data.Regions {
+					data.regions
+				}
+			
+			
+				public var startIndex: Data.Index {
+					data.startIndex
+				}
+			
+			
+				public var endIndex: Data.Index {
+					data.endIndex
+				}
+			
+			
+				public typealias Regions = Data.Regions
+			
+				public typealias Element = Data.Element
+			
+				public typealias Index = Data.Index
+			
+				public typealias SubSequence = Data.SubSequence
+			
+				public typealias Indices = Data.Indices
 				public let data: Data
 
 				public init(data: Data) {
@@ -76,6 +144,31 @@ final class DataStoragePluginTests: XCTestCase {
 			"""
 			
 			struct DataHolder {
+				subscript(position: Data.Index) -> Data.Element {
+					data[position]
+				}
+			
+				subscript(bounds: Range < Data.Index>) -> Data.SubSequence {
+					data[bounds]
+				}
+			
+				var regions: Data.Regions {
+					data.regions
+				}
+			
+				var startIndex: Data.Index {
+					data.startIndex
+				}
+			
+				var endIndex: Data.Index {
+					data.endIndex
+				}
+			
+				typealias Regions = Data.Regions
+				typealias Element = Data.Element
+				typealias Index = Data.Index
+				typealias SubSequence = Data.SubSequence
+				typealias Indices = Data.Indices
 				let data: Data
 				init(data: Data) {
 					self.data = data
@@ -101,6 +194,31 @@ final class DataStoragePluginTests: XCTestCase {
 			"""
 			
 			internal struct DataHolder {
+				subscript(position: Data.Index) -> Data.Element {
+					foo[position]
+				}
+			
+				subscript(bounds: Range < Data.Index>) -> Data.SubSequence {
+					foo[bounds]
+				}
+			
+				var regions: Data.Regions {
+					foo.regions
+				}
+			
+				var startIndex: Data.Index {
+					foo.startIndex
+				}
+			
+				var endIndex: Data.Index {
+					foo.endIndex
+				}
+			
+				typealias Regions = Data.Regions
+				typealias Element = Data.Element
+				typealias Index = Data.Index
+				typealias SubSequence = Data.SubSequence
+				typealias Indices = Data.Indices
 				let foo: Data
 				init(foo: Data) {
 					self.foo = foo
@@ -126,7 +244,7 @@ final class DataStoragePluginTests: XCTestCase {
 			   }
 			   """,
 			   diagnostics: [
-				   DiagnosticSpec(message: "@DataStorage can only be applied to a struct", line: 1, column: 1)
+				   DiagnosticSpec(message: "'DataStorage' macro can only be applied to a struct", line: 1, column: 1)
 			   ],
 			   macros: testMacros,
 			   indentationWidth: .tab
@@ -153,11 +271,45 @@ final class DataStoragePluginTests: XCTestCase {
 					}
 				}
 				public static let byteCount = 32
+				public subscript(position: Data.Index) -> Data.Element {
+					data[position]
+				}
+			
+			
+				public subscript(bounds: Range < Data.Index>) -> Data.SubSequence {
+					data[bounds]
+				}
+			
+			
+				public var regions: Data.Regions {
+					data.regions
+				}
+			
+			
+				public var startIndex: Data.Index {
+					data.startIndex
+				}
+			
+			
+				public var endIndex: Data.Index {
+					data.endIndex
+				}
+			
+			
+				public typealias Regions = Data.Regions
+			
+				public typealias Element = Data.Element
+			
+				public typealias Index = Data.Index
+			
+				public typealias SubSequence = Data.SubSequence
+			
+				public typealias Indices = Data.Indices
 				public let data: Data
 
 				public init(data: Data) throws {
 					guard data.count == Self.byteCount else {
-						throw InvalidByteCountError(actual: data.count)
+					 throw InvalidByteCountError(actual: data.count)
 					}
 					self.data = data
 				}
