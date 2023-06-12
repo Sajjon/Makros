@@ -320,4 +320,74 @@ final class DataStoragePluginTests: XCTestCase {
 			indentationWidth: .tab
 		)
 	}
+	
+	func testDataStoragePublicWithNameAndByteCount() {
+		
+		assertMacroExpansion(
+			"""
+			@DataStorage(named: "secret", byteCount: 32)
+			public struct SecretDataHolder {
+			}
+			""",
+			
+			expandedSource:
+			"""
+			
+			public struct SecretDataHolder {
+				struct InvalidByteCountError: Error, CustomStringConvertible {
+					let actual: Int
+					var description: String {
+						"Invalid byteCount, expected: \\(SecretDataHolder.byteCount), but got: \\(actual)"
+					}
+				}
+				public static let byteCount = 32
+				public subscript(position: Data.Index) -> Data.Element {
+					secret[position]
+				}
+			
+			
+				public subscript(bounds: Range < Data.Index>) -> Data.SubSequence {
+					secret[bounds]
+				}
+			
+			
+				public var regions: Data.Regions {
+					secret.regions
+				}
+			
+			
+				public var startIndex: Data.Index {
+					secret.startIndex
+				}
+			
+			
+				public var endIndex: Data.Index {
+					secret.endIndex
+				}
+			
+			
+				public typealias Regions = Data.Regions
+			
+				public typealias Element = Data.Element
+			
+				public typealias Index = Data.Index
+			
+				public typealias SubSequence = Data.SubSequence
+			
+				public typealias Indices = Data.Indices
+				public let secret: Data
+
+				public init(secret: Data) throws {
+					guard secret.count == Self.byteCount else {
+					 throw InvalidByteCountError(actual: secret.count)
+					}
+					self.secret = secret
+				}
+			}
+			""",
+			
+			macros: testMacros,
+			indentationWidth: .tab
+		)
+	}
 }
